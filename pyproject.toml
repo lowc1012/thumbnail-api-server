@@ -1,0 +1,15 @@
+[project]
+name = "thumbnail-api-server"
+version = "0.1.0"
+description = "Building a long-running job API which accepts image files, creates thumbnails, and allows the thumbnails to be fetched when done processing."
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "fastapi[standard]>=0.128.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.2",
+    "ruff>=0.14.11",
+]

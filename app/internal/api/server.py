@@ -1,10 +1,13 @@
-from typing import Optional
-
+import time
 import uvicorn
-from fastapi import FastAPI
 
 from app.internal.api.v1 import router
 from app.internal.configuration.settings import Settings, get_settings
+from app.internal.log.logger import get_logger
+from typing import Optional
+from fastapi import FastAPI, Request
+
+logger = get_logger()
 
 
 def create_app(settings: Optional[Settings] = None) -> FastAPI:
@@ -13,7 +16,8 @@ def create_app(settings: Optional[Settings] = None) -> FastAPI:
     if settings is None:
         settings = get_settings()
 
-    # TODO: Log the configuration
+    # Configure logging first
+    logger.info(f"Creating FastAPI app - Environment: {settings.ENVIRONMENT}")
 
     application = FastAPI(
         title="thumbnail-api-server",
@@ -22,12 +26,26 @@ def create_app(settings: Optional[Settings] = None) -> FastAPI:
         debug=settings.DEBUG
     )
 
-    # TODO: Add rate limiting state and exception handler
-
     # TODO: Configure middlewares
+    @application.middleware("http")
+    async def log_requests(request: Request, call_next):
+        start_time = time.time()
+        response = await call_next(request)
+        process_time = time.time() - start_time
+
+        logger.info(
+            "HTTP Request",
+            method=request.method,
+            url=str(request.url),
+            status_code=response.status_code,
+            process_time=f"{process_time:.4f}s",
+            client_ip=request.client.host if request.client else None
+        )
+        return response
 
     # Create API router
     application.include_router(router.api_v1)
+    logger.info("FastAPI application created successfully")
     return application
 
 
@@ -42,7 +60,7 @@ def start_server(settings: Optional[Settings] = None) -> None:
         app,
         host=settings.HOST,
         port=settings.PORT,
-        log_level=settings.LOG_LEVEL.lower(),
+        log_config=None,
         access_log=settings.ACCESS_LOG,
         loop=settings.EVENT_LOOP
     )

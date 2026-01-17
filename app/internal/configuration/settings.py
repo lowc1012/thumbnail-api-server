@@ -1,4 +1,5 @@
 from pathlib import Path
+
 from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -15,18 +16,16 @@ class Settings(BaseSettings):
     """
 
     model_config = SettingsConfigDict(
-        env_file=['.env.local', '.env'],
-        env_file_encoding='utf-8',
-        extra='ignore',
-        case_sensitive=False
+        env_file=[".env.local", ".env"],
+        env_file_encoding="utf-8",
+        extra="ignore",
+        case_sensitive=False,
     )
 
     # Server Configuration
     HOST: str = Field(default="0.0.0.0", description="Server host address")
     PORT: int = Field(default=8080, description="Server port")
-    ACCESS_LOG: bool = Field(
-        default=False, description="Enable access logging"
-    )
+    ACCESS_LOG: bool = Field(default=False, description="Enable access logging")
     EVENT_LOOP: str = Field(default="asyncio", description="Event loop type")
 
     # Application settings
@@ -34,15 +33,19 @@ class Settings(BaseSettings):
         default="development", description="Application environment"
     )
     DEBUG: bool = Field(default=True, description="Debug mode")
-    ALLOW_RELOAD: bool = Field(
-        default=False, description="Allow reloading"
+    LOG_LEVEL: str = Field(default="DEBUG", description="Application logging level")
+    CELERY_BROKER_URL: str = Field(
+        default="redis://localhost:6379", description="Celery broker URL"
     )
-    LOG_LEVEL: str = Field(
-        default="DEBUG", description="Application logging level"
+    CELERY_BACKEND_URL: str = Field(
+        default="redis://localhost:6379", description="Celery backend URL"
     )
-    DATA_DIR: Path = Field(
-        default_factory=lambda: Path(__file__).parent / "data"
-    )
+    S3_ENDPOINT_URL: str = Field(default="http://localhost:9000", description="S3 endpoint URL")
+    S3_REGION: str = Field(default="us-east-1", description="S3 region")
+    S3_BUCKET_NAME: str = Field(default="thumbnail-api-server-lowc1012", description="S3 bucket name")
+    S3_KEY_PREFIX: str = Field(default="images", description="S3 key prefix")
+    AWS_ACCESS_KEY_ID: str = Field(default="minioadmin", description="AWS access key ID")
+    AWS_SECRET_ACCESS_KEY: str = Field(default="minioadmin", description="AWS secret access key")
 
     # validation
     @field_validator("LOG_LEVEL")

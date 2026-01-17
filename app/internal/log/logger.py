@@ -1,9 +1,12 @@
-import sys
 import logging
+import sys
 from typing import Optional
+
 from loguru import logger
 
 from app.internal.configuration.settings import Settings
+
+_app_logger = None
 
 
 class InterceptHandler(logging.Handler):
@@ -23,13 +26,15 @@ class InterceptHandler(logging.Handler):
             if frame is None:  # Prevent infinite loop
                 break
 
-        logger.opt(depth=depth, exception=record.exc_info).log(level, record.getMessage())
+        logger.opt(depth=depth, exception=record.exc_info).log(
+            level, record.getMessage()
+        )
 
 
 class AppLogger:
     """Application logger using loguru"""
 
-    _instance: Optional['AppLogger'] = None
+    _instance: Optional["AppLogger"] = None
     _configured = False
 
     def __new__(cls, settings: Optional[Settings] = None):
@@ -51,7 +56,7 @@ class AppLogger:
 
         # Intercept standard logging
         logging.basicConfig(handlers=[InterceptHandler()], level=0, force=True)
-        
+
         # Configure all existing loggers to use our handler
         for name in logging.root.manager.loggerDict.keys():
             logging.getLogger(name).handlers = []
@@ -88,15 +93,15 @@ class AppLogger:
             )
 
         self._configured = True
-        logger.info("Logger configured", level=settings.LOG_LEVEL, debug=settings.DEBUG,
-                    environment=settings.ENVIRONMENT)
+        logger.info(
+            "Logger configured",
+            level=settings.LOG_LEVEL,
+            debug=settings.DEBUG,
+            environment=settings.ENVIRONMENT,
+        )
 
     def get_logger(self):
         return logger
-
-
-# Module-level instance for easy access
-_app_logger = None
 
 
 def get_logger():

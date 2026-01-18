@@ -16,13 +16,9 @@ class StorageService:
             aws_access_key_id=getattr(settings, "AWS_ACCESS_KEY_ID", None),
             aws_secret_access_key=getattr(settings, "AWS_SECRET_ACCESS_KEY", None),
         )
+        self.endpoint_url = getattr(settings, "S3_ENDPOINT_URL")
         self.bucket_name = getattr(settings, "S3_BUCKET_NAME")
         self.prefix = getattr(settings, "S3_KEY_PREFIX", "").rstrip("/")
-        logger.info(
-            "StorageService initialized",
-            bucket=self.bucket_name,
-            region=settings.S3_REGION,
-        )
 
     def _get_key(self, file_path: str) -> str:
         """Get full S3 key with prefix"""
@@ -30,17 +26,14 @@ class StorageService:
             return f"{self.prefix}/{file_path}"
         return file_path
 
-    def save(self, file_path: str, data: bytes) -> str:
+    def save(self, file_path: str, data: bytes, content_type: str = "") -> str:
         """Save file to S3"""
         key = self._get_key(file_path)
-
-        self.s3_client.put_object(Bucket=self.bucket_name, Key=key, Body=data)
-
-        url = f"https://{self.bucket_name}.s3.amazonaws.com/{key}"
+        self.s3_client.put_object(Bucket=self.bucket_name, Key=key, Body=data, ContentType=content_type)
         logger.info(
             "File saved to S3", bucket=self.bucket_name, key=key, size=len(data)
         )
-        return url
+        return f"{self.endpoint_url}/{key}"
 
     def load(self, file_path: str) -> bytes:
         """Load file from S3"""

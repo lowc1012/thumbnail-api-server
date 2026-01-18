@@ -18,6 +18,3 @@ celery_app.conf.update(
     enable_utc=False,
     task_track_started=True,
 )
-
-# Auto-discover task
-celery_app.autodiscover_tasks(["app.internal.tasks"])

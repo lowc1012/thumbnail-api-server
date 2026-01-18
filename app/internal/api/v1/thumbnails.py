@@ -21,12 +21,7 @@ class ThumbnailResp(BaseModel):
     message: Optional[str] = Field(default=None, description="status message")
 
 
-async def upload(
-        image: UploadFile = File(...),
-        length: int = Form(default=200, ge=1, le=2000),
-        img_format: str = Form(default="jpeg"),
-        quality: int = Form(default=85, ge=1, le=100),
-):
+async def upload(image: UploadFile = File(...)):
     """Upload image and start thumbnail generation task"""
 
     # TODO: validate the input data
@@ -38,6 +33,8 @@ async def upload(
     except Exception as e:
         logger.error(f"Failed to read file: {e}")
         raise HTTPException(status_code=HTTPStatus.BAD_REQUEST, detail="Invalid file")
+    finally:
+        await image.close()
 
     try:
         settings = get_settings()
@@ -45,17 +42,16 @@ async def upload(
             image.filename.split(".")[-1] if "." in image.filename else "jpg"
         )
         key = f"original/{job_id}.{file_extension}"
+        content_type = f"image/{file_extension}"
         storage_service = StorageService(settings)
-        storage_service.save(key, content)
+        storage_service.save(key, content, content_type)
     except Exception as e:
         logger.error(f"Failed to upload image: {e}", job_id=job_id)
         raise HTTPException(status_code=HTTPStatus.INTERNAL_SERVER_ERROR, detail="Failed to upload image")
 
     # Submit task to Celery
     try:
-        task = generate_thumbnail.apply_async(
-            args=[key, length, img_format, quality], task_id=job_id
-        )
+        task = generate_thumbnail.apply_async(args=[key], task_id=job_id)
     except Exception as e:
         logger.error("Failed to submit task", job_id=job_id, error=str(e))
         raise HTTPException(status_code=HTTPStatus.SERVICE_UNAVAILABLE, detail="Failed to submit task")

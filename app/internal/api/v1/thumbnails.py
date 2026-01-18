@@ -2,7 +2,7 @@ import uuid
 from http import HTTPStatus
 from typing import Optional
 
-from fastapi import File, Form, HTTPException, UploadFile
+from fastapi import APIRouter, File, HTTPException, UploadFile
 from pydantic import BaseModel, Field
 
 from app.internal.configuration.settings import get_settings
@@ -11,16 +11,15 @@ from app.internal.tasks.thumbnail import generate_thumbnail
 from app.internal.services.storage import StorageService
 
 logger = get_logger()
+router = APIRouter()
 
 
 class ThumbnailResp(BaseModel):
     job_id: str = Field(description="job identifier")
-    thumbnail_url: Optional[str] = Field(
-        default=None, description="URL to newly-created thumbnail"
-    )
     message: Optional[str] = Field(default=None, description="status message")
 
 
+@router.post("/thumbnails/")
 async def upload(image: UploadFile = File(...)):
     """Upload image and start thumbnail generation task"""
 

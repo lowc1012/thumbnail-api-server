@@ -2,10 +2,10 @@ import uuid
 from http import HTTPStatus
 from typing import Optional
 
-from fastapi import APIRouter, File, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from pydantic import BaseModel, Field
 
-from app.internal.configuration.settings import get_settings
+from app.internal.dependencies import get_storage_service
 from app.internal.log.logger import get_logger
 from app.internal.tasks.thumbnail import generate_thumbnail
 from app.internal.services.storage import StorageService
@@ -20,29 +20,30 @@ class ThumbnailResp(BaseModel):
 
 
 @router.post("/thumbnails/")
-async def upload(image: UploadFile = File(...)):
+async def upload(
+        image: UploadFile = File(...),
+        storage_service: StorageService = Depends(get_storage_service),
+):
     """Upload image and start thumbnail generation task"""
 
     # TODO: validate the input data
-
-    job_id = str(uuid.uuid4())
-    logger.debug(f"Job ID: {job_id}")
     try:
         content = await image.read()
+        file_extension = (
+            image.filename.split(".")[-1] if "." in image.filename else "jpg"
+        )
     except Exception as e:
         logger.error(f"Failed to read file: {e}")
         raise HTTPException(status_code=HTTPStatus.BAD_REQUEST, detail="Invalid file")
     finally:
         await image.close()
 
+    # Upload original image to storage
+    job_id = str(uuid.uuid4())
+    logger.debug(f"Job ID: {job_id}")
     try:
-        settings = get_settings()
-        file_extension = (
-            image.filename.split(".")[-1] if "." in image.filename else "jpg"
-        )
         key = f"original/{job_id}.{file_extension}"
         content_type = f"image/{file_extension}"
-        storage_service = StorageService(settings)
         storage_service.save(key, content, content_type)
     except Exception as e:
         logger.error(f"Failed to upload image: {e}", job_id=job_id)
@@ -60,7 +61,7 @@ async def upload(image: UploadFile = File(...)):
     # Return response
     response = ThumbnailResp(
         job_id=task.id,
-        message="Started to generating thumbnail",
+        message="Started to generate thumbnail",
     )
 
     return response

@@ -23,7 +23,7 @@ def create_app(settings: Optional[Settings] = None) -> FastAPI:
         title="thumbnail-api-server",
         description="Building a long-running job API which accepts image files, creates thumbnails, and allows the thumbnails to be fetched when done processing.",
         version="0.1.0",
-        debug=settings.DEBUG
+        debug=settings.DEBUG,
     )
 
     # TODO: Configure middlewares
@@ -39,11 +39,13 @@ def create_app(settings: Optional[Settings] = None) -> FastAPI:
             url=str(request.url),
             status_code=response.status_code,
             process_time=f"{process_time:.4f}s",
-            client_ip=request.client.host if request.client else None
+            client_ip=request.client.host if request.client else None,
         )
         return response
 
     # Create API router
+    @application.get("/health")
+    def check_status(): return {"status": "healthy"}
     application.include_router(router.api_v1)
     logger.info("FastAPI application created successfully")
     return application
@@ -62,5 +64,5 @@ def start_server(settings: Optional[Settings] = None) -> None:
         port=settings.PORT,
         log_config=None,
         access_log=settings.ACCESS_LOG,
-        loop=settings.EVENT_LOOP
+        loop=settings.EVENT_LOOP,
     )

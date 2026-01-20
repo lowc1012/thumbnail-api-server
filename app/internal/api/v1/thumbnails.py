@@ -42,9 +42,10 @@ async def upload(
     job_id = str(uuid.uuid4())
     logger.debug(f"Job ID: {job_id}")
     try:
-        key = f"original/{job_id}.{file_extension}"
+        path = f"original/{job_id}.{file_extension}"
         content_type = f"image/{file_extension}"
-        storage_service.save(key, content, content_type)
+        key = storage_service.save(path, content, content_type)
+        logger.info(f"Image uploaded to: {key}", job_id=job_id)
     except Exception as e:
         logger.error(f"Failed to upload image: {e}", job_id=job_id)
         raise HTTPException(status_code=HTTPStatus.INTERNAL_SERVER_ERROR, detail="Failed to upload image")

@@ -1,0 +1,23 @@
+{{- range $component, $componentValues := $.Values.app }}
+{{- if ne $component "worker" }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "app.componentName" (list $ $component) }}
+  labels:
+    {{ include "app.commLabels" $ | nindent 4 }}
+    {{ include "app.selectorLabels" (list $ $component) | nindent 4 }}
+spec:
+  type: {{ $componentValues.service.type | default "ClusterIP" }}
+  ports:
+    - port: {{ $componentValues.service.port | default 80 }}
+      protocol: {{ $componentValues.service.protocol | default "TCP" | quote }}
+      name: {{ $componentValues.service.name | default "http" | quote }}
+      {{- if hasKey $componentValues.service "nodePort" }}
+      nodePort: {{ $componentValues.service.nodePort }}
+      {{- end }}
+  selector:
+    {{ include "app.selectorLabels" (list $ $component) | nindent 4 }}
+{{- end }}
+---
+{{- end }}

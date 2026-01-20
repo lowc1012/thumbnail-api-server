@@ -1,0 +1,10 @@
+{{- if $.Values.configs }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ $.Release.Name }}
+data:
+  {{- with $.Values.configs }}
+  {{- toYaml . | nindent 2 }}
+  {{- end }}
+{{- end }}

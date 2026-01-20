@@ -1,0 +1,39 @@
+{{- range $component, $componentValues := $.Values.app }}
+{{- if $componentValues.autoscaling.enabled }}
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ include "app.componentName" (list $ $component) }}
+  labels:
+    app.kubernetes.io/component: {{ $component }}
+    {{- with (default $.Values.podLabels $componentValues.podLabels) }}
+    {{- toYaml . | nindent 8 }}
+    {{- end }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ include "app.componentName" (list $ $component) }}
+  minReplicas: {{ $componentValues.autoscaling.minReplicas | default $componentValues.replicaCount }}
+  maxReplicas: {{ $componentValues.autoscaling.maxReplicas }}
+  # TODO: auto-scaling for workers based on the number of pending tasks in queue
+  metrics:
+    {{- if $componentValues.autoscaling.targetCPUUtilizationPercentage }}
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: {{ $componentValues.autoscaling.targetCPUUtilizationPercentage }}
+    {{- end }}
+    {{- if $componentValues.autoscaling.targetMemoryUtilizationPercentage }}
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: {{ $componentValues.autoscaling.targetMemoryUtilizationPercentage }}
+    {{- end }}
+---
+{{- end }}
+{{- end }}

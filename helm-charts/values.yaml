@@ -1,0 +1,81 @@
+# Default values for thumbnail-api-server
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+nameOverride: ""
+fullnameOverride: ""
+serviceAccount:
+  create: false
+  annotations: {}
+  name: ""
+image:
+  repository: ""
+  pullPolicy: IfNotPresent
+  tag: ""
+imagePullSecrets: {}
+env: {}
+secretAnnotations: {}
+podLabels: {}
+podAnnotations: {}
+podSecurityContext:
+  fsGroup: 1000
+  runAsUser: 1000
+secretLabels: {}
+volumes: {}
+volumeMounts: {}
+configs: {}
+secrets: {}
+
+app:
+  server:
+    service:
+      name: server
+      port: 8080
+    replicaCount: 1
+    autoscaling:
+      enabled: false
+    command: []
+    execArgs: []
+    resources: {}
+    initContainers: []
+    podAnnotations: {}
+    podLabels: {}
+    podSecurityContext: {}
+    livenessProbe: {}
+    readinessProbe: {}
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+    ingress:
+      enabled: false
+      className: ""
+      annotations: {}
+      hosts: []
+      tls: []
+
+  worker:
+    replicaCount: 1
+    autoscaling:
+      enabled: false
+    command: []
+    execArgs: []
+    resources: {}
+    initContainers: []
+    podAnnotations: {}
+    podLabels: {}
+    podSecurityContext: {}
+    livenessProbe: {}
+    readinessProbe: {}
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+
+minio:
+  enable: false
+  rootUser: "minioadmin"
+  rootPassword: "minioadmin"
+  storage: "10Gi"
+  defaultBucket: ""
+
+redis:
+  enable: false

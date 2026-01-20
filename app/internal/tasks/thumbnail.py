@@ -27,11 +27,12 @@ def generate_thumbnail(self, image_path: str):
 
         # Save thumbnail to storage
         thumbnail_path = f"thumbnail/{self.request.id}.{thumbnail_format.lower()}"
-        thumbnail_url = storage_service.save(thumbnail_path, thumbnail_bytes)
+        thumbnail_key = storage_service.save(thumbnail_path, thumbnail_bytes)
 
         result = {
             "job_id": self.request.id,
-            "thumbnail_url": thumbnail_url,
+            "bucket": storage_service.bucket_name,
+            "key": thumbnail_key,
             "status": "completed",
         }
 

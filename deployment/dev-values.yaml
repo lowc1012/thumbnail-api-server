@@ -5,13 +5,16 @@ image:
 podSecurityContext:
   fsGroup: 1000
   runAsUser: 1000
-secrets:
-  AWS_ACCESS_KEY_ID: minioadmin
-  AWS_SECRET_ACCESS_KEY: minioadmin
+configs:
+  TZ: Asia/Tokyo
   CELERY_BROKER_URL: redis://redis:6379
   CELERY_BACKEND_URL: redis://redis:6379
   S3_ENDPOINT_URL: http://minio:9000
   S3_BUCKET_NAME: thumbnail-api-server-lowc1012
+  S3_KEY_PREFIX: images
+secrets:
+  AWS_ACCESS_KEY_ID: minioadmin
+  AWS_SECRET_ACCESS_KEY: minioadmin
 
 app:
   server:
@@ -21,13 +24,13 @@ app:
     replicaCount: 1
     autoscaling:
       enabled: false
-    command: ["python"]
-    execArgs: ["-m", "app.main"]
-    resources: {}
-    initContainers: []
-    podAnnotations: {}
-    podLabels: {}
-    podSecurityContext: {}
+    command: [ "python" ]
+    execArgs: [ "-m", "app.main" ]
+    resources: { }
+    initContainers: [ ]
+    podAnnotations: { }
+    podLabels: { }
+    podSecurityContext: { }
     livenessProbe:
       httpGet:
         path: /health
@@ -38,27 +41,27 @@ app:
         path: /health
         port: 8080
       initialDelaySeconds: 5
-    nodeSelector: {}
-    tolerations: []
-    affinity: {}
+    nodeSelector: { }
+    tolerations: [ ]
+    affinity: { }
     ingress:
       enabled: false
       className: ""
-      annotations: {}
-      hosts: []
-      tls: []
+      annotations: { }
+      hosts: [ ]
+      tls: [ ]
 
   worker:
     replicaCount: 1
     autoscaling:
       enabled: false
-    command: ["celery"]
-    execArgs: ["-A", "app.internal.tasks.celery:celery_app", "worker", "--loglevel=debug"]
-    resources: {}
-    initContainers: []
-    podAnnotations: {}
-    podLabels: {}
-    podSecurityContext: {}
+    command: [ "celery" ]
+    execArgs: [ "-A", "app.internal.tasks.celery:celery_app", "worker", "--loglevel=debug" ]
+    resources: { }
+    initContainers: [ ]
+    podAnnotations: { }
+    podLabels: { }
+    podSecurityContext: { }
     livenessProbe:
       exec:
         command:
@@ -69,10 +72,10 @@ app:
       periodSeconds: 30
       timeoutSeconds: 10
       failureThreshold: 3
-    readinessProbe: {}
-    nodeSelector: {}
-    tolerations: []
-    affinity: {}
+    readinessProbe: { }
+    nodeSelector: { }
+    tolerations: [ ]
+    affinity: { }
 
 minio:
   enable: true

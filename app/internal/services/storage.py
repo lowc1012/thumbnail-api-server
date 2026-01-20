@@ -33,7 +33,7 @@ class StorageService:
         logger.info(
             "File saved to S3", bucket=self.bucket_name, key=key, size=len(data)
         )
-        return f"{self.endpoint_url}/{key}"
+        return key
 
     def load(self, file_path: str) -> bytes:
         """Load file from S3"""

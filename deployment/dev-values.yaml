@@ -28,7 +28,10 @@ app:
     command: [ "python" ]
     execArgs: [ "-m", "app.main" ]
     resources: { }
-    initContainers: [ ]
+    initContainers:
+      - name: wait-for-db
+        image: busybox:latest
+        command: [ 'sh', '-c', 'until nc -z postgresql 5432; do echo waiting for db; sleep 2; done;' ]
     podAnnotations: { }
     podLabels: { }
     podSecurityContext: { }
@@ -59,7 +62,10 @@ app:
     command: [ "celery" ]
     execArgs: [ "-A", "app.internal.tasks.celery:celery_app", "worker", "--loglevel=debug" ]
     resources: { }
-    initContainers: [ ]
+    initContainers:
+      - name: wait-for-db
+        image: busybox:latest
+        command: [ 'sh', '-c', 'until nc -z postgresql 5432; do echo waiting for db; sleep 2; done;' ]
     podAnnotations: { }
     podLabels: { }
     podSecurityContext: { }

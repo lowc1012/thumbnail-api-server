@@ -11,24 +11,24 @@ settings = get_settings()
 
 
 @celery_app.task(bind=True, name="thumbnail.generate")
-def generate_thumbnail(self, image_path: str):
+def generate_thumbnail(self, key: str):
     """Generate thumbnail from image"""
-    logger.info("Generating thumbnail", task_id=self.request.id, image_path=image_path)
+    logger.info("Generating thumbnail", task_id=self.request.id, image_path=key)
 
     desired_size = (100, 100)
     try:
         self.update_state(state="PROGRESS")
         # Load image from storage
         storage_service = StorageService(settings)
-        image_bytes = storage_service.load(image_path)
+        image_bytes = storage_service.load(key)
 
         # Resize image
         image_service = ImageService()
         thumbnail_bytes, thumbnail_format = image_service.resize(image_bytes, desired_size)
 
         # Save thumbnail to storage
-        thumbnail_path = f"thumbnail/{self.request.id}.{thumbnail_format.lower()}"
-        thumbnail_key = storage_service.save(thumbnail_path, thumbnail_bytes)
+        thumbnail_key = f"images/thumbnail/{self.request.id}.{thumbnail_format.lower()}"
+        storage_service.save(thumbnail_key, thumbnail_bytes)
 
         return {
             "job_id": self.request.id,

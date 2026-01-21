@@ -42,9 +42,9 @@ async def upload(
     job_id = str(uuid.uuid4())
     logger.debug(f"Job ID: {job_id}")
     try:
-        path = f"original/{job_id}.{file_extension}"
+        key = f"images/original/{job_id}.{file_extension}"
         content_type = f"image/{file_extension}"
-        key = storage_service.save(path, content, content_type)
+        storage_service.save(key, content, content_type)
         logger.info(f"Image uploaded to: {key}", job_id=job_id)
     except Exception as e:
         logger.error(f"Failed to upload image: {e}", job_id=job_id)
@@ -55,7 +55,7 @@ async def upload(
 
     # Submit task to Celery
     try:
-        task = generate_thumbnail.apply_async(args=[path], task_id=job_id)
+        task = generate_thumbnail.apply_async(args=[key], task_id=job_id)
     except Exception as e:
         logger.error("Failed to submit task", job_id=job_id, error=str(e))
         raise HTTPException(

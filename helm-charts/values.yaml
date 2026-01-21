@@ -6,70 +6,69 @@ nameOverride: ""
 fullnameOverride: ""
 serviceAccount:
   create: false
-  annotations: {}
+  annotations: { }
   name: ""
 image:
   repository: ""
   pullPolicy: IfNotPresent
   tag: ""
-imagePullSecrets: {}
-env: {}
-secretAnnotations: {}
-podLabels: {}
-podAnnotations: {}
+imagePullSecrets: { }
+env: { }
+secretAnnotations: { }
+podLabels: { }
+podAnnotations: { }
 podSecurityContext:
   fsGroup: 1000
   runAsUser: 1000
-secretLabels: {}
-volumes: {}
-volumeMounts: {}
-configs: {}
-secrets: {}
+secretLabels: { }
+volumes: { }
+volumeMounts: { }
+configs: { }
+secrets: { }
 
 app:
   server:
-    service:
-      name: server
-      port: 8080
+    service: { }
     replicaCount: 1
     autoscaling:
       enabled: false
-    command: []
-    execArgs: []
-    resources: {}
-    initContainers: []
-    podAnnotations: {}
-    podLabels: {}
-    podSecurityContext: {}
-    livenessProbe: {}
-    readinessProbe: {}
-    nodeSelector: {}
-    tolerations: []
-    affinity: {}
+    command: [ ]
+    execArgs: [ ]
+    resources: { }
+    initContainers: [ ]
+    podAnnotations: { }
+    podLabels: { }
+    podSecurityContext: { }
+    livenessProbe: { }
+    readinessProbe: { }
+    nodeSelector: { }
+    tolerations: [ ]
+    affinity: { }
     ingress:
       enabled: false
       className: ""
-      annotations: {}
-      hosts: []
-      tls: []
+      annotations: { }
+      hosts: [ ]
+      tls: [ ]
 
   worker:
     replicaCount: 1
     autoscaling:
       enabled: false
-    command: []
-    execArgs: []
-    resources: {}
-    initContainers: []
-    podAnnotations: {}
-    podLabels: {}
-    podSecurityContext: {}
-    livenessProbe: {}
-    readinessProbe: {}
-    nodeSelector: {}
-    tolerations: []
-    affinity: {}
+    command: [ ]
+    execArgs: [ ]
+    resources: { }
+    initContainers: [ ]
+    podAnnotations: { }
+    podLabels: { }
+    podSecurityContext: { }
+    livenessProbe: { }
+    readinessProbe: { }
+    nodeSelector: { }
+    tolerations: [ ]
+    affinity: { }
 
+# For dev environment, provision MinIO, Redis and PostgreSQL if set enabled to true
 minio:
   enable: false
   rootUser: "minioadmin"

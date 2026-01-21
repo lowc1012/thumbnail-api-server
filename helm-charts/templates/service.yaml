@@ -6,9 +6,8 @@ metadata:
   name: {{ include "app.componentName" (list $ $component) }}
   labels:
     {{ include "app.commLabels" $ | nindent 4 }}
-    {{ include "app.selectorLabels" (list $ $component) | nindent 4 }}
 spec:
-  type: {{ $componentValues.service.type | default "ClusterIP" }}
+  type: {{ $componentValues.service.type }}
   ports:
     - port: {{ $componentValues.service.port | default 80 }}
       protocol: {{ $componentValues.service.protocol | default "TCP" | quote }}

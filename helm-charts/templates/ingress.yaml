@@ -20,11 +20,10 @@ kind: Ingress
 metadata:
   name: {{ include "app.componentName" (list $ $component) }}
   labels:
-    {{- include "app.commLabels" $ | nindent 4 }}
-    {{- include "app.selectorLabels" (list $ $component) | nindent 4 }}
+    {{ include "app.commLabels" $ | nindent 4 }}
   {{- with .ingress.annotations }}
   annotations:
-    {{- toYaml . | nindent 4 }}
+    {{ toYaml . | nindent 4 }}
   {{- end }}
 spec:
   {{- if and .ingress.className (semverCompare ">=1.18-0" $.Capabilities.KubeVersion.GitVersion) }}

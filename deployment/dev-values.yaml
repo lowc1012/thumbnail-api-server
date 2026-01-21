@@ -20,8 +20,9 @@ secrets:
 app:
   server:
     service:
-      name: server
+      type: NodePort
       port: 8080
+      nodePort: 30080
     replicaCount: 1
     autoscaling:
       enabled: false

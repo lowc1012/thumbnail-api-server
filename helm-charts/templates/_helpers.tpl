@@ -51,9 +51,7 @@ Common labels
 */}}
 {{- define "app.commLabels" -}}
 helm.sh/chart: {{ include "app.chart" . }}
-{{- if .Chart.AppVersion }}
-app.kubernetes.io/version: {{ include "app.version" . }}
-{{- end }}
+app.kubernetes.io/version: {{ default (include "app.version" .) .Chart.AppVersion }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end }}
 
@@ -63,9 +61,9 @@ Selector labels
 {{- define "app.selectorLabels" -}}
 {{- $global := index . 0 -}}
 {{- $component := index . 1 | trimPrefix "-" -}}
+app.kubernetes.io/name: {{ include "app.name" $global }}
 app.kubernetes.io/instance: {{ $global.Release.Name }}
 app.kubernetes.io/component: {{ $component }}
-app.kubernetes.io/name: {{ include "app.name" $global }}
 {{- end }}
 
 {{/*

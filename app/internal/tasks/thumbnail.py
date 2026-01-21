@@ -1,4 +1,5 @@
 """Celery tasks for thumbnail generation"""
+from botocore.exceptions import ClientError
 from app.internal.tasks.celery import celery_app
 from app.internal.log.logger import get_logger
 from app.internal.configuration.settings import get_settings
@@ -29,17 +30,18 @@ def generate_thumbnail(self, image_path: str):
         thumbnail_path = f"thumbnail/{self.request.id}.{thumbnail_format.lower()}"
         thumbnail_key = storage_service.save(thumbnail_path, thumbnail_bytes)
 
-        result = {
+        return {
             "job_id": self.request.id,
+            "endpoint_url": storage_service.endpoint_url,
             "bucket": storage_service.bucket_name,
             "key": thumbnail_key,
-            "status": "completed",
         }
 
-        return result
-
+    except (ClientError, IOError) as e:
+        logger.error(f"Retryable error: {e}", task_id=self.request.id, error=str(e))
+        self.retry(countdown=60, max_retries=3, exc=e)
     except Exception as e:
         logger.error(
             f"Thumbnail generation failed: {e}", task_id=self.request.id, error=str(e)
         )
-        self.retry(countdown=60 * 1, max_retries=3, exc=e)
+        raise e

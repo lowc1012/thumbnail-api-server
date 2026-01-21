@@ -21,8 +21,8 @@ class ThumbnailResp(BaseModel):
 
 @router.post("/thumbnails/")
 async def upload(
-        image: UploadFile = File(...),
-        storage_service: StorageService = Depends(get_storage_service),
+    image: UploadFile = File(...),
+    storage_service: StorageService = Depends(get_storage_service),
 ):
     """Upload image and start thumbnail generation task"""
 
@@ -48,21 +48,23 @@ async def upload(
         logger.info(f"Image uploaded to: {key}", job_id=job_id)
     except Exception as e:
         logger.error(f"Failed to upload image: {e}", job_id=job_id)
-        raise HTTPException(status_code=HTTPStatus.INTERNAL_SERVER_ERROR, detail="Failed to upload image")
+        raise HTTPException(
+            status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
+            detail="Failed to upload image",
+        )
 
     # Submit task to Celery
     try:
-        task = generate_thumbnail.apply_async(args=[key], task_id=job_id)
+        task = generate_thumbnail.apply_async(args=[path], task_id=job_id)
     except Exception as e:
         logger.error("Failed to submit task", job_id=job_id, error=str(e))
-        raise HTTPException(status_code=HTTPStatus.SERVICE_UNAVAILABLE, detail="Failed to submit task")
+        raise HTTPException(
+            status_code=HTTPStatus.SERVICE_UNAVAILABLE, detail="Failed to submit task"
+        )
 
     logger.info("Task submitted", job_id=job_id)
 
-    # Return response
-    response = ThumbnailResp(
+    return ThumbnailResp(
         job_id=task.id,
         message="Started to generate thumbnail",
     )
-
-    return response

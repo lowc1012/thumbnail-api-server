@@ -1,10 +1,13 @@
 from http import HTTPStatus
+import json
+from typing import List
 
-from celery.result import AsyncResult
-from fastapi import APIRouter, HTTPException
+from celery.backends.database.models import Task
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
+from sqlmodel import Session, select
 
-from app.internal.tasks.celery import celery_app
+from app.internal.dependencies import get_db_session
 
 router = APIRouter()
 
@@ -12,34 +15,42 @@ router = APIRouter()
 class JobResponse(BaseModel):
     job_id: str = Field(description="Job identifier")
     status: str = Field(description="Job status")
-    thumbnail_url: str | None = Field(default=None, description="Thumbnail URL if completed")
+    result: str | None = Field(default=None, description="Job result")
 
 
 @router.get("/jobs/{job_id}")
-def get_job(job_id: str) -> JobResponse:
-    task = AsyncResult(job_id, app=celery_app)
-
-    if task.state == "PENDING":
+def get_job(job_id: str, session: Session = Depends(get_db_session)) -> JobResponse:
+    statement = select(Task).where(Task.task_id == job_id)
+    task = session.exec(statement).first()
+    if task is None:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Job not found")
 
-    if task.state == "SUCCESS":
-        result = task.result
-        return JobResponse(
-            job_id=job_id,
-            status=task.state.lower(),
-            thumbnail_url=result.get("thumbnail_url")
-        )
-
-    return JobResponse(job_id=job_id, status=task.state.lower())
+    return JobResponse(
+        job_id=job_id,
+        status=task.status,
+        result=json.dumps(task.result),
+    )
 
 
 @router.get("/jobs/")
-def list():
-    # TODO
-    pass
+def list_jobs(session: Session = Depends(get_db_session)) -> List[JobResponse]:
+    """List all submitted jobs"""
+    statement = select(Task)
+    jobs = session.exec(statement).all()
+    res = []
+    for job in jobs:
+        res.append(
+            JobResponse(
+                job_id=job.task_id,
+                status=job.status,
+                result=json.dumps(job.result),
+            )
+        )
+    return res
 
 
 @router.get("/jobs/{job_id}/thumbnail")
 def get_thumbnail_by_job_id(job_id: str):
+    """Get thumbnail by job ID"""
     # TODO
     pass

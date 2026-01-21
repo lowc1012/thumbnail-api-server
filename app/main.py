@@ -2,6 +2,7 @@
 
 from app.internal.api.server import start_server
 from app.internal.configuration.settings import get_settings
+from app.internal.database import create_db_and_tables
 from app.internal.log.logger import AppLogger
 
 
@@ -13,6 +14,9 @@ def main():
 
     # Configure logger
     AppLogger(settings)
+
+    # Initialize database
+    create_db_and_tables(settings)
 
     # Start the server
     start_server(settings)

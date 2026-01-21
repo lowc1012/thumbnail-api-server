@@ -32,18 +32,20 @@ class Settings(BaseSettings):
     )
     DEBUG: bool = Field(default=True, description="Debug mode")
     LOG_LEVEL: str = Field(default="DEBUG", description="Application logging level")
-    CELERY_BROKER_URL: str = Field(
-        default="redis://localhost:6379", description="Celery broker URL"
+    CELERY_BROKER_URL: str = Field(default="", description="Celery broker URL")
+    CELERY_BACKEND_URL: str = Field(default="", description="Celery backend URL")
+    CELERY_RESULT_DB_TABLENAMES: str = Field(
+        default="", description="Celery result database table names"
     )
-    CELERY_BACKEND_URL: str = Field(
-        default="redis://localhost:6379", description="Celery backend URL"
+    S3_ENDPOINT_URL: str = Field(
+        default="http://localhost:9000", description="S3 endpoint URL"
     )
-    S3_ENDPOINT_URL: str = Field(default="http://localhost:9000", description="S3 endpoint URL")
     S3_REGION: str = Field(default="us-east-1", description="S3 region")
     S3_BUCKET_NAME: str = Field(default="", description="S3 bucket name")
     S3_KEY_PREFIX: str = Field(default="", description="S3 key prefix")
     AWS_ACCESS_KEY_ID: str = Field(default="", description="AWS access key ID")
     AWS_SECRET_ACCESS_KEY: str = Field(default="", description="AWS secret access key")
+    DATABASE_URL: str = Field(default="", description="Database URL")
 
     # validation
     @field_validator("LOG_LEVEL")

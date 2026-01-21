@@ -7,14 +7,15 @@ podSecurityContext:
   runAsUser: 1000
 configs:
   TZ: Asia/Tokyo
-  CELERY_BROKER_URL: redis://redis:6379
-  CELERY_BACKEND_URL: redis://redis:6379
+  CELERY_BROKER_URL: redis://redis:6379/0
+  CELERY_BACKEND_URL: db+postgresql://postgres:postgres@postgresql:5432/thumbnail_db
   S3_ENDPOINT_URL: http://minio:9000
   S3_BUCKET_NAME: thumbnail-api-server-lowc1012
   S3_KEY_PREFIX: images
 secrets:
   AWS_ACCESS_KEY_ID: minioadmin
   AWS_SECRET_ACCESS_KEY: minioadmin
+  DATABASE_URL: postgresql://postgres:postgres@postgresql:5432/thumbnail_db
 
 app:
   server:
@@ -82,4 +83,7 @@ minio:
   defaultBucket: thumbnail-api-server-lowc1012
 
 redis:
+  enable: true
+
+postgresql:
   enable: true

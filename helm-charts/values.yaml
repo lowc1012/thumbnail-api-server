@@ -79,3 +79,10 @@ minio:
 
 redis:
   enable: false
+
+postgresql:
+  enable: false
+  user: "postgres"
+  password: "postgres"
+  database: "thumbnail_db"
+  storage: "10Gi"

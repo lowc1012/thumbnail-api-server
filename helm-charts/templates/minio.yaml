@@ -42,7 +42,7 @@ spec:
       containers:
         - name: minio
           image: bitnamilegacy/minio:2025.7.23
-          args: ["server", "/data"]
+          args: ["server", "/data", "--console-address", ":9001"]
           env:
             - name: MINIO_ROOT_USER
               valueFrom:
@@ -56,6 +56,7 @@ spec:
                   key: rootPassword
           ports:
             - containerPort: 9000
+            - containerPort: 9001
           lifecycle:
             postStart:
               exec:
@@ -87,7 +88,12 @@ metadata:
     {{ include "app.commLabels" . | nindent 4 }}
 spec:
   ports:
-    - port: 9000
+    - name: api
+      port: 9000
+      targetPort: 9000
+    - name: console
+      port: 9001
+      targetPort: 9001
   selector:
     {{ include "app.selectorLabels" (list . "minio") | nindent 4 }}
 {{- end }}

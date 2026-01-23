@@ -190,3 +190,4 @@ Access console at `http://localhost:9001` (default credentials: minioadmin/minio
 - Add metrics and monitoring (Prometheus/Grafana), and support HPA
 - Support batch processing
 - Add webhook notifications for job completion
+- Add API tests, integration tests, and GitHub Action workflow

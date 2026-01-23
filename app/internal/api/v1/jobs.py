@@ -1,5 +1,4 @@
 from http import HTTPStatus
-import json
 from typing import List
 
 from celery.backends.database.models import Task
@@ -16,7 +15,7 @@ router = APIRouter()
 class JobResponse(BaseModel):
     job_id: str = Field(description="Job identifier")
     status: str = Field(description="Job status")
-    result: str | None = Field(default=None, description="Job result")
+    result: dict | None = Field(default=None, description="Job result")
 
 
 class ThumbnailUrlResponse(BaseModel):
@@ -34,7 +33,7 @@ def get_job(job_id: str, session: Session = Depends(get_db_session)) -> JobRespo
     return JobResponse(
         job_id=job_id,
         status=task.status,
-        result=json.dumps(task.result),
+        result=task.result,
     )
 
 
@@ -49,7 +48,7 @@ def list_jobs(session: Session = Depends(get_db_session)) -> List[JobResponse]:
             JobResponse(
                 job_id=job.task_id,
                 status=job.status,
-                result=json.dumps(job.result),
+                result=job.result,
             )
         )
     return res
@@ -61,7 +60,7 @@ def get_thumbnail_by_job_id(
     session: Session = Depends(get_db_session),
     storage_service: StorageService = Depends(get_storage_service)
 ) -> ThumbnailUrlResponse:
-    """Get presigned URL for thumbnail download"""
+    """Get presigned URL to download thumbnail"""
     statement = select(Task).where(Task.task_id == job_id)
     task = session.exec(statement).first()
     
@@ -71,8 +70,11 @@ def get_thumbnail_by_job_id(
     if task.status != "SUCCESS":
         raise HTTPException(status_code=HTTPStatus.BAD_REQUEST, detail=f"Job status: {task.status}")
     
-    result = json.loads(task.result)
+    result = task.result
     thumbnail_key = result.get("key")
-    presigned_url = storage_service.generate_presigned_url(thumbnail_key)
     
-    return ThumbnailUrlResponse(job_id=job_id, thumbnail_url=presigned_url)
+    try:
+        presigned_url = storage_service.generate_presigned_url(thumbnail_key)
+        return ThumbnailUrlResponse(job_id=job_id, thumbnail_url=presigned_url)
+    except Exception as e:
+        raise HTTPException(status_code=HTTPStatus.INTERNAL_SERVER_ERROR, detail="Failed to generate presigned URL")
